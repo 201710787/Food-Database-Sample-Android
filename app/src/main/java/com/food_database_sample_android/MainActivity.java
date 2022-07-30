@@ -56,15 +56,12 @@ public class MainActivity extends AppCompatActivity {
         });
 
         binding.imageBtn.setOnClickListener(v->{
-            Log.d("AAAA","AAAAAA");
-            if(checkPermission()) {
+            if (verifyPermissions()) {
                 Intent intent = new Intent();
                 intent.setType("image/*");
                 intent.setAction(Intent.ACTION_GET_CONTENT);
                 launcher.launch(intent);
             }
-            String[] permissions = {Manifest.permission.READ_EXTERNAL_STORAGE};
-            ActivityCompat.requestPermissions(this, permissions, 321);
         });
         
         binding.foodNameInput.setOnKeyListener((view, i, keyEvent) -> {
@@ -85,27 +82,21 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    boolean checkPermission() {
-
-        String temp = "";
-
-        //파일 읽기 권한 확인
-        if (ContextCompat.checkSelfPermission(this,
-                Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
-            Log.d("AAAA","BBBBBB");
-            return true;
+    public Boolean verifyPermissions() {
+        int permissionExternalMemory = ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        if (permissionExternalMemory != PackageManager.PERMISSION_GRANTED) {
+            String[] STORAGE_PERMISSIONS = {Manifest.permission.WRITE_EXTERNAL_STORAGE};
+            ActivityCompat.requestPermissions(this, STORAGE_PERMISSIONS, 1);
+            return false;
         }
-        return false;
+        return true;
     }
-
     ActivityResultLauncher<Intent> launcher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
             new ActivityResultCallback<ActivityResult>()
             {
                 @Override
                 public void onActivityResult(ActivityResult result)
                 {
-                    Log.d("AAAA","CCCCCC");
-
                     if (result.getResultCode() == RESULT_OK)
                     {
                         Log.e("TAG", "result : " + result);
@@ -114,10 +105,6 @@ public class MainActivity extends AppCompatActivity {
                         Uri uri = intent.getData();
                         Log.e("TAG", "uri : " + uri);
                         binding.imageInputResult.setText(uri.toString());
-//                        imageview.setImageURI(uri);
-//                        Glide.with(MainActivity.this)
-//                                .load(uri)
-//                                .into(imageview);
                     }
                 }
             });
