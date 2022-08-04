@@ -28,8 +28,14 @@ import java.util.concurrent.atomic.AtomicReference;
 
 public class MainActivity extends AppCompatActivity {
 
-    ActivityMainBinding binding;
-    InputMethodManager imm;
+    private final String TAG="Gallery Intent";
+
+    /**레이아웃 바인딩**/
+    private ActivityMainBinding binding;
+
+    /**키보드 제어 객체**/
+    private InputMethodManager imm;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -46,15 +52,19 @@ public class MainActivity extends AppCompatActivity {
         RecyclerView recyclerView = findViewById(R.id.charaList) ;
         recyclerView.setLayoutManager(new LinearLayoutManager(this)) ;
 
-        // 리사이클러뷰에 SimpleTextAdapter 객체 지정.
+        // 리사이클러뷰에 어댑터 객체 지정.
         AtomicReference<ListAdapter> adapter = new AtomicReference<>(new ListAdapter(list));
         recyclerView.setAdapter(adapter.get()) ;
 
+        // 리스트 아이템 삭제 버튼 클릭시 이벤트
+        // 리스트 아이템 삭제
         adapter.get().setDeleteClickListener((v,pos)->{
             list.remove(pos);
             adapter.get().notifyItemRemoved(pos);
         });
 
+        // 이미지 지정 버튼 클릭 시
+        // 갤러리 intent
         binding.imageBtn.setOnClickListener(v->{
             if (verifyPermissions()) {
                 Intent intent = new Intent();
@@ -63,7 +73,8 @@ public class MainActivity extends AppCompatActivity {
                 launcher.launch(intent);
             }
         });
-        
+
+        // 음식 이름 지정
         binding.foodNameInput.setOnKeyListener((view, i, keyEvent) -> {
             if(keyEvent.getAction()==KeyEvent.ACTION_DOWN&&i==KeyEvent.KEYCODE_ENTER) {
                 binding.foodName.setText(binding.foodNameInput.getText().toString());
@@ -72,6 +83,8 @@ public class MainActivity extends AppCompatActivity {
             }
             return true;
         });
+
+        // 음식 특성 추가
         binding.foodCharaInput.setOnKeyListener((view, i, keyEvent) -> {
             if(keyEvent.getAction()==KeyEvent.ACTION_DOWN&&i==KeyEvent.KEYCODE_ENTER) {
                 adapter.get().addItem(binding.foodCharaInput.getText().toString());
@@ -82,6 +95,7 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    /**외부 앱(갤러리) 에 대한 허가 확인**/
     public Boolean verifyPermissions() {
         int permissionExternalMemory = ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
         if (permissionExternalMemory != PackageManager.PERMISSION_GRANTED) {
@@ -91,7 +105,10 @@ public class MainActivity extends AppCompatActivity {
         }
         return true;
     }
-    ActivityResultLauncher<Intent> launcher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
+
+    /**외부 앱(갤러리) 인텐트 처리 메소드**/
+    ActivityResultLauncher<Intent> launcher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
             new ActivityResultCallback<ActivityResult>()
             {
                 @Override
@@ -99,14 +116,14 @@ public class MainActivity extends AppCompatActivity {
                 {
                     if (result.getResultCode() == RESULT_OK)
                     {
-                        Log.e("TAG", "result : " + result);
+                        Log.e(TAG, "result : " + result);
                         Intent intent = result.getData();
-                        Log.e("TAG", "intent : " + intent);
+                        Log.e(TAG, "intent : " + intent);
                         Uri uri = intent.getData();
-                        Log.e("TAG", "uri : " + uri);
+                        Log.e(TAG, "uri : " + uri);
                         binding.imageInputResult.setText(uri.toString());
                     }
                 }
-            });
+    });
 
 }
